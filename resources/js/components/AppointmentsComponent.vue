@@ -1,8 +1,25 @@
 <template>
+    
     <div class="container">
+        <h2 class="text-center">Historial de citas</h2><br>
+        <form class="form-inline">
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                    </div>
+                    <div class="col">
+                        <date-picker v-model="dateRange" v-on:confirm="filer" range appendToBody valueType="format" lang="es" confirm></date-picker>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-primary" v-on:click="getAppointments">Reiniciar tabla</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <br>
         <div class="row justify-content-center">
             <div class="col">
-                <h2 class="text-center">Historial de citas</h2><br>
+                
                 <table class="table text-center table-bordered table-hover table-striped"><!--Creamos una tabla que mostrará todas las tareas-->
                     <thead  class="thead-light">
                         <tr>
@@ -46,9 +63,10 @@
 </template>
 
 <script>
+    import DatePicker from 'vue2-datepicker';
 
     export default {
-
+        components: { DatePicker },
         data()
         {
             return {
@@ -58,7 +76,8 @@
                 currentSortDir:'asc',
                 currentSortIcon:'fa fa-caret-up',
                 pageSize:10,
-                currentPage:1
+                currentPage:1,
+                dateRange: '',
             }
         },
         mounted()
@@ -70,6 +89,12 @@
             getAppointments()
             {
                 axios.get(this.url).then(response => {
+                    this.appointments = response.data
+                });
+            },
+            getFilteredAppointments(initialDate, finalDate)
+            {
+                axios.get(this.url+'/'+initialDate+'/'+finalDate).then(response => {
                     this.appointments = response.data
                 });
             },
@@ -100,6 +125,10 @@
                 {
                     this.currentPage--;
                 }
+            },
+            filer()
+            {
+                this.getFilteredAppointments(this.dateRange[0],this.dateRange[1]);
             }
             
         },
