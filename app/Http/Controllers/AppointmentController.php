@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Appointment;
+use App\Dentist;
+use App\Service;
+use App\Patient;
+use DB;
 use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
@@ -12,9 +16,38 @@ class AppointmentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function getTable()
+    {
+        $appointments = DB::table('Appointments')
+                        ->join('Dentists', 'Appointments.dentist_id', '=', 'Dentists.id')
+                        ->join('Services', 'Appointments.service_id', '=', 'Services.id')
+                        ->join('Patients', 'Appointments.patient_id', '=', 'Patients.id')
+                        ->select('Appointments.*', 'Dentists.name as dentist_name', 'Services.name as service_name','Services.price as service_price','Patients.name as patient_name')
+                        ->paginate();
+                        
+        return $appointments;
+    }
+
+    public function filteredTableApi($initialDate, $finalDate)
+    {
+        $appointments = DB::table('Appointments')
+        ->join('Dentists', 'Appointments.dentist_id', '=', 'Dentists.id')
+        ->join('Services', 'Appointments.service_id', '=', 'Services.id')
+        ->join('Patients', 'Appointments.patient_id', '=', 'Patients.id')
+        ->select('Appointments.*', 'Dentists.name as dentist_name', 'Services.name as service_name','Services.price as service_price','Patients.name as patient_name')
+        ->whereBetween('date',array($initialDate,$finalDate) )
+        ->paginate();
+        
+        return $appointments;
+    }
+    public function tableApi()
+    {
+        return $this->getTable();
+    }
+
     public function index()
     {
-        //
+        return view('Appointment.Index');
     }
 
     /**

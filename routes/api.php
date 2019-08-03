@@ -13,4 +13,5 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::get('Appointments','AppointmentController@index');
+Route::get('Appointments/{initialDate}/{finalDate}','AppointmentController@filteredTableApi');
+Route::get('Appointments','AppointmentController@tableApi');
