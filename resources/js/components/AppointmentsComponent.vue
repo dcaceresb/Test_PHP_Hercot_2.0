@@ -1,12 +1,12 @@
 <template>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-8">
-                <h2>Lista de tareas</h2>
+            <div class="col">
+                <h2 class="text-center">Historial de citas</h2><br>
                 <table class="table text-center table-bordered table-hover table-striped"><!--Creamos una tabla que mostrará todas las tareas-->
                     <thead  class="thead-light">
                         <tr>
-                            <th scope="col">Fecha Consulta</th>
+                            <th @click="sort()" scope="col">Fecha Consulta <i :class="[currentSortIcon]" ></i></th>
                             <th scope="col">Paciente</th>
                             <th scope="col">Servicio</th>
                             <th scope="col">Medico</th>
@@ -15,7 +15,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="appointment in appointments.data.data" :key="appointment.id"> <!--Recorremos el array y cargamos nuestra tabla-->
+                        <tr v-for="appointment in appointmentsSorted" :key="appointment.id"> <!--Recorremos el array y cargamos nuestra tabla-->
                             <td v-text="appointment.date"></td>
                             <td v-text="appointment.patient_name"></td>
                             <td v-text="appointment.service_name"></td>
@@ -33,6 +33,12 @@
                         </tr>
                     </tbody>
                 </table>
+                <h>Pagina actual: {{currentPage}}</h><br>
+                <div class="row justify-content-center">
+                    <i @click="prevPage()" class="btn fa fa-arrow-left" aria-hidden="true" size="6"></i>
+                    &nbsp;&nbsp;&nbsp;
+                    <i @click="nextPage()" class="btn fa fa-arrow-right" aria-hidden="true"></i>
+                </div>
             </div>
         </div>
     </div>
@@ -40,21 +46,92 @@
 </template>
 
 <script>
+
     export default {
 
         data()
         {
             return {
-                appointments: []
+                appointments: [],
+                url: 'api/Appointments',
+                pagination: [],
+                currentSortDir:'asc',
+                currentSortIcon:'fa fa-caret-up',
+                pageSize:10,
+                currentPage:1
             }
         },
         mounted()
         {
-            var url = 'api/Appointments';
-            axios.get(url).then(response => {
-                this.appointments = response
-            });
+            this.getAppointments();
+        },
+        methods:
+        {
+            getAppointments()
+            {
+                axios.get(this.url).then(response => {
+                    this.appointments = response.data
+                });
+            },
+            sort:function() 
+            {
+
+                if(this.currentSortDir==='asc')
+                {
+                    this.currentSortDir='desc';
+                    this.currentSortIcon = 'fa fa-caret-down'
+                }
+                else
+                {
+                    this.currentSortDir='asc';
+                    this.currentSortIcon = 'fa fa-caret-up'
+                }
+
+            },
+            nextPage:function() 
+            {
+                if((this.currentPage*this.pageSize) < this.appointments.length) 
+                {
+                    this.currentPage++;
+                }
+            },
+            prevPage:function() {
+                if(this.currentPage > 1) 
+                {
+                    this.currentPage--;
+                }
+            }
+            
+        },
+        computed:
+        {
+            appointmentsSorted:function() 
+            {
+                return this.appointments.sort((a,b) => {
+                let modifier = 1;
+                if(this.currentSortDir === 'desc')
+                {
+                    modifier = -1;
+                } 
+                if(a['date'] < b['date']) 
+                {
+                    return -1 * modifier;
+                }
+                if(a['date'] > b['date'])
+                { 
+                    return 1 * modifier;
+                }
+                return 0;
+                }).filter((row, index) => 
+                {
+                    let start = (this.currentPage-1)*this.pageSize;
+                    let end = this.currentPage*this.pageSize;
+                    if(index >= start && index < end) 
+                        return true;
+                });
+            }
         }
+
      
         
     }

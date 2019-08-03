@@ -19,11 +19,12 @@ class AppointmentController extends Controller
     public function getTable()
     {
         $appointments = DB::table('Appointments')
-                        ->join('Dentists', 'Appointments.dentist_id', '=', 'Dentists.id')
-                        ->join('Services', 'Appointments.service_id', '=', 'Services.id')
-                        ->join('Patients', 'Appointments.patient_id', '=', 'Patients.id')
-                        ->select('Appointments.*', 'Dentists.name as dentist_name', 'Services.name as service_name','Services.price as service_price','Patients.name as patient_name')
-                        ->paginate();
+        ->join('Dentists', 'Appointments.dentist_id', '=', 'Dentists.id')
+        ->join('Services', 'Appointments.service_id', '=', 'Services.id')
+        ->join('Patients', 'Appointments.patient_id', '=', 'Patients.id')
+        ->select('Appointments.*', 'Dentists.name as dentist_name', 'Services.name as service_name','Services.price as service_price','Patients.name as patient_name')
+        ->orderBy('date','asc')
+        ->get();
                         
         return $appointments;
     }
@@ -36,7 +37,7 @@ class AppointmentController extends Controller
         ->join('Patients', 'Appointments.patient_id', '=', 'Patients.id')
         ->select('Appointments.*', 'Dentists.name as dentist_name', 'Services.name as service_name','Services.price as service_price','Patients.name as patient_name')
         ->whereBetween('date',array($initialDate,$finalDate) )
-        ->paginate();
+        ->get();
         
         return $appointments;
     }

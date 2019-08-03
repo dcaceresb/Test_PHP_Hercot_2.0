@@ -136,19 +136,81 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      appointments: []
+      appointments: [],
+      url: 'api/Appointments',
+      pagination: [],
+      currentSortDir: 'asc',
+      currentSortIcon: 'fa fa-caret-up',
+      pageSize: 10,
+      currentPage: 1
     };
   },
   mounted: function mounted() {
-    var _this = this;
+    this.getAppointments();
+  },
+  methods: {
+    getAppointments: function getAppointments() {
+      var _this = this;
 
-    var url = 'api/Appointments';
-    axios.get(url).then(function (response) {
-      _this.appointments = response;
-    });
+      axios.get(this.url).then(function (response) {
+        _this.appointments = response.data;
+      });
+    },
+    sort: function sort() {
+      if (this.currentSortDir === 'asc') {
+        this.currentSortDir = 'desc';
+        this.currentSortIcon = 'fa fa-caret-down';
+      } else {
+        this.currentSortDir = 'asc';
+        this.currentSortIcon = 'fa fa-caret-up';
+      }
+    },
+    nextPage: function nextPage() {
+      if (this.currentPage * this.pageSize < this.appointments.length) {
+        this.currentPage++;
+      }
+    },
+    prevPage: function prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    }
+  },
+  computed: {
+    appointmentsSorted: function appointmentsSorted() {
+      var _this2 = this;
+
+      return this.appointments.sort(function (a, b) {
+        var modifier = 1;
+
+        if (_this2.currentSortDir === 'desc') {
+          modifier = -1;
+        }
+
+        if (a['date'] < b['date']) {
+          return -1 * modifier;
+        }
+
+        if (a['date'] > b['date']) {
+          return 1 * modifier;
+        }
+
+        return 0;
+      }).filter(function (row, index) {
+        var start = (_this2.currentPage - 1) * _this2.pageSize;
+        var end = _this2.currentPage * _this2.pageSize;
+        if (index >= start && index < end) return true;
+      });
+    }
   }
 });
 
@@ -639,103 +701,151 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "container" }, [
     _c("div", { staticClass: "row justify-content-center" }, [
-      _c("div", { staticClass: "col-md-8" }, [
-        _c("h2", [_vm._v("Lista de tareas")]),
-        _vm._v(" "),
-        _c(
-          "table",
-          {
-            staticClass:
-              "table text-center table-bordered table-hover table-striped"
-          },
-          [
-            _vm._m(0),
-            _vm._v(" "),
-            _c(
-              "tbody",
-              _vm._l(_vm.appointments.data.data, function(appointment) {
-                return _c("tr", { key: appointment.id }, [
-                  _c("td", {
-                    domProps: { textContent: _vm._s(appointment.date) }
-                  }),
+      _c(
+        "div",
+        { staticClass: "col" },
+        [
+          _c("h2", { staticClass: "text-center" }, [
+            _vm._v("Historial de citas")
+          ]),
+          _c("br"),
+          _vm._v(" "),
+          _c(
+            "table",
+            {
+              staticClass:
+                "table text-center table-bordered table-hover table-striped"
+            },
+            [
+              _c("thead", { staticClass: "thead-light" }, [
+                _c("tr", [
+                  _c(
+                    "th",
+                    {
+                      attrs: { scope: "col" },
+                      on: {
+                        click: function($event) {
+                          return _vm.sort()
+                        }
+                      }
+                    },
+                    [
+                      _vm._v("Fecha Consulta "),
+                      _c("i", { class: [_vm.currentSortIcon] })
+                    ]
+                  ),
                   _vm._v(" "),
-                  _c("td", {
-                    domProps: { textContent: _vm._s(appointment.patient_name) }
-                  }),
+                  _c("th", { attrs: { scope: "col" } }, [_vm._v("Paciente")]),
                   _vm._v(" "),
-                  _c("td", {
-                    domProps: { textContent: _vm._s(appointment.service_name) }
-                  }),
+                  _c("th", { attrs: { scope: "col" } }, [_vm._v("Servicio")]),
                   _vm._v(" "),
-                  _c("td", {
-                    domProps: { textContent: _vm._s(appointment.dentist_name) }
-                  }),
+                  _c("th", { attrs: { scope: "col" } }, [_vm._v("Medico")]),
                   _vm._v(" "),
-                  _c("td", {
-                    domProps: { textContent: _vm._s(appointment.price) }
-                  }),
+                  _c("th", { attrs: { scope: "col" } }, [
+                    _vm._v("Precio Servicio")
+                  ]),
                   _vm._v(" "),
-                  _c("td", [
-                    _c("form", { staticClass: "form-inline" }, [
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-default",
-                          on: {
-                            click: function($event) {
-                              return _vm.loadFieldsUpdate(_vm.task)
+                  _c("th", { attrs: { scope: "col" } }, [_vm._v("Opciones")])
+                ])
+              ]),
+              _vm._v(" "),
+              _c(
+                "tbody",
+                _vm._l(_vm.appointmentsSorted, function(appointment) {
+                  return _c("tr", { key: appointment.id }, [
+                    _c("td", {
+                      domProps: { textContent: _vm._s(appointment.date) }
+                    }),
+                    _vm._v(" "),
+                    _c("td", {
+                      domProps: {
+                        textContent: _vm._s(appointment.patient_name)
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("td", {
+                      domProps: {
+                        textContent: _vm._s(appointment.service_name)
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("td", {
+                      domProps: {
+                        textContent: _vm._s(appointment.dentist_name)
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("td", {
+                      domProps: { textContent: _vm._s(appointment.price) }
+                    }),
+                    _vm._v(" "),
+                    _c("td", [
+                      _c("form", { staticClass: "form-inline" }, [
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-default",
+                            on: {
+                              click: function($event) {
+                                return _vm.loadFieldsUpdate(_vm.task)
+                              }
                             }
-                          }
-                        },
-                        [_c("i", { staticClass: "fa fa-pencil" })]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "button",
-                        {
-                          staticClass: "btn btn-default",
-                          on: {
-                            click: function($event) {
-                              return _vm.deleteTask(_vm.task)
+                          },
+                          [_c("i", { staticClass: "fa fa-pencil" })]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "button",
+                          {
+                            staticClass: "btn btn-default",
+                            on: {
+                              click: function($event) {
+                                return _vm.deleteTask(_vm.task)
+                              }
                             }
-                          }
-                        },
-                        [_c("i", { staticClass: "fa fa-trash-o fa-lg" })]
-                      )
+                          },
+                          [_c("i", { staticClass: "fa fa-trash-o fa-lg" })]
+                        )
+                      ])
                     ])
                   ])
-                ])
-              }),
-              0
-            )
-          ]
-        )
-      ])
+                }),
+                0
+              )
+            ]
+          ),
+          _vm._v(" "),
+          _c("h", [_vm._v("Pagina actual: " + _vm._s(_vm.currentPage))]),
+          _c("br"),
+          _vm._v(" "),
+          _c("div", { staticClass: "row justify-content-center" }, [
+            _c("i", {
+              staticClass: "btn fa fa-arrow-left",
+              attrs: { "aria-hidden": "true", size: "6" },
+              on: {
+                click: function($event) {
+                  return _vm.prevPage()
+                }
+              }
+            }),
+            _vm._v("\n                   \n                "),
+            _c("i", {
+              staticClass: "btn fa fa-arrow-right",
+              attrs: { "aria-hidden": "true" },
+              on: {
+                click: function($event) {
+                  return _vm.nextPage()
+                }
+              }
+            })
+          ])
+        ],
+        1
+      )
     ])
   ])
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("thead", { staticClass: "thead-light" }, [
-      _c("tr", [
-        _c("th", { attrs: { scope: "col" } }, [_vm._v("Fecha Consulta")]),
-        _vm._v(" "),
-        _c("th", { attrs: { scope: "col" } }, [_vm._v("Paciente")]),
-        _vm._v(" "),
-        _c("th", { attrs: { scope: "col" } }, [_vm._v("Servicio")]),
-        _vm._v(" "),
-        _c("th", { attrs: { scope: "col" } }, [_vm._v("Medico")]),
-        _vm._v(" "),
-        _c("th", { attrs: { scope: "col" } }, [_vm._v("Precio Servicio")]),
-        _vm._v(" "),
-        _c("th", { attrs: { scope: "col" } }, [_vm._v("Opciones")])
-      ])
-    ])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 
