@@ -34,7 +34,6 @@ config = {
 $(document).ready(function () {
     var price = $('#price').val();
     price = addDots(price);
-    alert(price);
     $('#price').val(price);
     $('#Date').datepicker(config);
 

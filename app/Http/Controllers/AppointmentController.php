@@ -6,13 +6,14 @@ use App\Appointment;
 use App\Dentist;
 use App\Service;
 use App\Patient;
+use App\Http\Requests\AppointmentRequest;
 use DB;
 use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
     
-    public function save(Request $request,$id)
+    public function save(AppointmentRequest $request, $id)
     {
         if($id!=0)
         {
@@ -30,19 +31,6 @@ class AppointmentController extends Controller
         $Appointment->save();
     }
 
-    public function getTable()
-    {
-        $appointments = DB::table('Appointments')
-        ->join('Dentists', 'Appointments.dentist_id', '=', 'Dentists.id')
-        ->join('Services', 'Appointments.service_id', '=', 'Services.id')
-        ->join('Patients', 'Appointments.patient_id', '=', 'Patients.id')
-        ->select('Appointments.*', 'Dentists.name as dentist_name', 'Services.name as service_name','Services.price as service_price','Patients.name as patient_name')
-        ->orderBy('date','asc')
-        ->get();
-                        
-        return $appointments;
-    }
-
     public function filteredTableApi($initialDate, $finalDate)
     {
         $appointments = DB::table('Appointments')
@@ -55,9 +43,18 @@ class AppointmentController extends Controller
         
         return $appointments;
     }
+
     public function tableApi()
     {
-        return $this->getTable();
+        $appointments = DB::table('Appointments')
+        ->join('Dentists', 'Appointments.dentist_id', '=', 'Dentists.id')
+        ->join('Services', 'Appointments.service_id', '=', 'Services.id')
+        ->join('Patients', 'Appointments.patient_id', '=', 'Patients.id')
+        ->select('Appointments.*', 'Dentists.name as dentist_name', 'Services.name as service_name','Services.price as service_price','Patients.name as patient_name')
+        ->orderBy('date','asc')
+        ->get();
+                        
+        return $appointments;
     }
 
     public function index()
@@ -74,20 +71,8 @@ class AppointmentController extends Controller
         return view("Appointment.Create",compact('dentists','services','patients'));
     }
 
-    public function store(Request $request)
+    public function store(AppointmentRequest $request)
     {
-        $validator = \Validator::make($request->all(), [
-            
-            'date' => 'required',
-            'price' => 'required',
-            'dentist_id' => 'required|min:1',
-            'patient_id' => 'required|min:1',
-            'service_id' => 'required|min:1',
-        ]);
-        if ($validator->fails())
-        {
-            return redirect()->back()->withInput()->withErrors($validator->errors());
-        }
 
         $this->save($request,0);
         return view("Appointment.Index" )->with('info','La cita ha sido Guardada');
@@ -111,21 +96,8 @@ class AppointmentController extends Controller
     }
 
     
-    public function update(Request $request, $id)
+    public function update(AppointmentRequest $request, $id)
     {
-        $validator = \Validator::make($request->all(), [
-            
-            'date' => 'required',
-            'price' => 'required',
-            'dentist_id' => 'required|min:1',
-            'patient_id' => 'required|min:1',
-            'service_id' => 'required|min:1',
-        ]);
-        if ($validator->fails())
-        {
-            return redirect()->back()->withInput()->withErrors($validator->errors());
-        }
-        
         $this->save($request, $id);
         return view("Appointment.Index" )->with('info','La cita ha sido Guardada');
     }

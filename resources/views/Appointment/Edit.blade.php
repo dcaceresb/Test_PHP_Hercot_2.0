@@ -5,6 +5,7 @@
     <br>
     <h2 class="text-center"> Editar consulta dental {{$Appointment->id}}</h2>
     <br>
+    @include('info')
     <form method="POST" action="/Appointments/{{ $Appointment->id }}"  role="form">
        
         <input name="_method" type="hidden" value="PUT">
@@ -16,7 +17,7 @@
             <label for="service_id" class="col-sm-2 col-form-label">Servicio:</label>
             <div class="col-sm-4">
                 <select id="service_id" name="service_id" class="browser-default custom-select">
-                    <option >Seleccione servicio</option>
+                    <option value="" >Seleccione servicio</option>
                     @foreach($services as $service)
                         @if($Appointment->service_id == $service->id)
                             <option selected value="{{$service->id}}">{{$service->name}}</option> 
@@ -42,7 +43,7 @@
             <label for="dentist_id" class="col-sm-2 col-form-label">Médico tratante:</label>
             <div class="col-sm-4">
                 <select id="dentist_id" name="dentist_id" class="browser-default custom-select">
-                    <option selected>Seleccione medico</option>
+                    <option value="">Seleccione medico</option>
                     @foreach($dentists as $dentist)
                         @if($Appointment->dentist_id == $dentist->id)
                             <option selected value="{{$dentist->id}}">{{$dentist->name}}</option> 
@@ -62,7 +63,7 @@
             <label for="patient_id" class="col-sm-2 col-form-label">Nombre Paciente:</label>
             <div class="col-sm-4">
             <select id="patient_id" name="patient_id" class="browser-default custom-select">
-                <option selected>Seleccione paciente</option>
+                <option value="">Seleccione paciente</option>
                 @foreach($patients as $patient)
                     @if($Appointment->patient_id == $patient->id)
                         <option selected value="{{$patient->id}}">{{$patient->name}}</option>

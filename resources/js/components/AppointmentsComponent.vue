@@ -6,7 +6,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col">
-                        <button type="button" class="btn btn-primary" @click="changeCreateView()" >Agendar cita</button>
+                        <button type="button" class="btn btn-primary" @click="changeToCreateView()" >Agendar cita</button>
                     </div>
                     <div class="col">
                         <date-picker v-model="dateRange" v-on:confirm="filer" range appendToBody valueType="format" lang="es" confirm></date-picker>
@@ -21,7 +21,7 @@
         <div class="row justify-content-center">
             <div class="col">
                 
-                <table class="table text-center table-bordered table-hover table-striped"><!--Creamos una tabla que mostrará todas las tareas-->
+                <table class="table text-center table-bordered table-hover table-striped">
                     <thead  class="thead-light">
                         <tr>
                             <th @click="sort()" scope="col">Fecha Consulta <i :class="[currentSortIcon]" ></i></th>
@@ -40,12 +40,9 @@
                             <td v-text="appointment.dentist_name"></td>
                             <td v-text="'$'+appointment.price.toLocaleString()"></td>
                             <td>
-                                <form class="form-inline">
-                                   
-                                    <!--Botón modificar, que carga los datos del formulario con la tarea seleccionada-->
-                                    <button type="button" class="btn btn-default" @click="changeUpdateView(appointment.id)"><i class="fa fa-pencil"></i></button>
-                                    <!--Botón que borra la tarea que seleccionemos-->
-                                    <button type="button" class="btn btn-default" @click="changeDeleteView(appointment.id)"><i class="fa fa-trash-o fa-lg"> </i></button>
+                                <form class="form-inline">       
+                                    <button type="button" class="btn btn-default" @click="changeToUpdateView(appointment.id)"><i class="fa fa-pencil"></i></button>                         
+                                    <button type="button" class="btn btn-default" @click="Delete(appointment.id)"><i class="fa fa-trash-o fa-lg"> </i></button>
                                 </form>
                             </td>
                         </tr>
@@ -139,15 +136,15 @@
             {
                 this.getFilteredAppointments(this.dateRange[0],this.dateRange[1]);
             },
-            changeCreateView()
+            changeToCreateView()
             {
                 window.location.href = "/Appointments/create";
             },
-            changeUpdateView(id)
+            changeToUpdateView(id)
             {
                 window.location.href = "/Appointments/"+id+"/edit";
             },
-            changeDeleteView(id)
+            Delete(id)
             {
                 let me = this;
                 if (confirm('¿Seguro que deseas borrar esta cita?')) {
@@ -157,13 +154,10 @@
 
                     })
                     .catch(function (error) {
-                        console.log(error);
+                        //console.log(error);
                     }); 
                 }
-            }
-
-            
-            
+            }         
         },
         computed:
         {

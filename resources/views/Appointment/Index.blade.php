@@ -6,8 +6,8 @@
 
     
     
-    
     <div id="app">
+
         <Appointments> </Appointments>
     </div>
     
