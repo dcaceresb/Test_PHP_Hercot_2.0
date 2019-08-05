@@ -15,3 +15,4 @@ use Illuminate\Http\Request;
 
 Route::get('Appointments/{initialDate}/{finalDate}','AppointmentController@filteredTableApi');
 Route::get('Appointments','AppointmentController@tableApi');
+Route::delete('Appointments/delete/{id}','AppointmentController@destroy');

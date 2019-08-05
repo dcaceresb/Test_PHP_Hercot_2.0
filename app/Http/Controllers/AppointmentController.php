@@ -11,11 +11,25 @@ use Illuminate\Http\Request;
 
 class AppointmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    
+    public function save(Request $request,$id)
+    {
+        if($id!=0)
+        {
+            $Appointment = Appointment::find($id);
+        }
+        else
+        {
+            $Appointment = new Appointment;
+        }
+        $Appointment->date = $request->date;
+        $Appointment->price = str_replace(".","",$request->price);
+        $Appointment->dentist_id = $request->dentist_id;
+        $Appointment->patient_id = $request->patient_id;
+        $Appointment->service_id = $request->service_id;
+        $Appointment->save();
+    }
+
     public function getTable()
     {
         $appointments = DB::table('Appointments')
@@ -51,69 +65,75 @@ class AppointmentController extends Controller
         return view('Appointment.Index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function create()
     {
-        //
+        $dentists = Dentist::orderBy('id','ASC')->paginate();
+        $services = Service::orderBy('id','ASC')->paginate();
+        $patients = Patient::orderBy('id','ASC')->paginate();
+        
+        return view("Appointment.Create",compact('dentists','services','patients'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        //
+        $validator = \Validator::make($request->all(), [
+            
+            'date' => 'required',
+            'price' => 'required',
+            'dentist_id' => 'required|min:1',
+            'patient_id' => 'required|min:1',
+            'service_id' => 'required|min:1',
+        ]);
+        if ($validator->fails())
+        {
+            return redirect()->back()->withInput()->withErrors($validator->errors());
+        }
+
+        $this->save($request,0);
+        return view("Appointment.Index" )->with('info','La cita ha sido Guardada');
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Appointment  $appointment
-     * @return \Illuminate\Http\Response
-     */
+    
     public function show(Appointment $appointment)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Appointment  $appointment
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Appointment $appointment)
+    
+    public function edit($id)
     {
-        //
+        $dentists = Dentist::orderBy('id','ASC')->paginate();
+        $services = Service::orderBy('id','ASC')->paginate();
+        $patients = Patient::orderBy('id','ASC')->paginate();
+
+        $Appointment = Appointment::find($id);
+        return view ("Appointment.Edit",compact('Appointment','dentists','services','patients'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Appointment  $appointment
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Appointment $appointment)
+    
+    public function update(Request $request, $id)
     {
-        //
+        $validator = \Validator::make($request->all(), [
+            
+            'date' => 'required',
+            'price' => 'required',
+            'dentist_id' => 'required|min:1',
+            'patient_id' => 'required|min:1',
+            'service_id' => 'required|min:1',
+        ]);
+        if ($validator->fails())
+        {
+            return redirect()->back()->withInput()->withErrors($validator->errors());
+        }
+        
+        $this->save($request, $id);
+        return view("Appointment.Index" )->with('info','La cita ha sido Guardada');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Appointment  $appointment
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Appointment $appointment)
+    public function destroy(Request $request)
     {
-        //
+        $appointment = Appointment::destroy($request->id);
+
+        return $appointment;
     }
 }

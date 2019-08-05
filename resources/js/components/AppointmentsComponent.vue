@@ -6,12 +6,13 @@
             <div class="container">
                 <div class="row">
                     <div class="col">
+                        <button type="button" class="btn btn-primary" @click="changeCreateView()" >Agendar cita</button>
                     </div>
                     <div class="col">
                         <date-picker v-model="dateRange" v-on:confirm="filer" range appendToBody valueType="format" lang="es" confirm></date-picker>
                     </div>
                     <div class="col">
-                        <button class="btn btn-primary" v-on:click="getAppointments">Reiniciar tabla</button>
+                        <button type="button" class="btn btn-primary" v-on:click="getAppointments">Reiniciar tabla</button>
                     </div>
                 </div>
             </div>
@@ -37,25 +38,26 @@
                             <td v-text="appointment.patient_name"></td>
                             <td v-text="appointment.service_name"></td>
                             <td v-text="appointment.dentist_name"></td>
-                            <td v-text="appointment.price"></td>
+                            <td v-text="'$'+appointment.price.toLocaleString()"></td>
                             <td>
                                 <form class="form-inline">
                                    
                                     <!--Botón modificar, que carga los datos del formulario con la tarea seleccionada-->
-                                    <button class="btn btn-default" @click="loadFieldsUpdate(task)"><i class="fa fa-pencil"></i></button>
+                                    <button type="button" class="btn btn-default" @click="changeUpdateView(appointment.id)"><i class="fa fa-pencil"></i></button>
                                     <!--Botón que borra la tarea que seleccionemos-->
-                                    <button class="btn btn-default" @click="deleteTask(task)"><i class="fa fa-trash-o fa-lg"> </i></button>
+                                    <button type="button" class="btn btn-default" @click="changeDeleteView(appointment.id)"><i class="fa fa-trash-o fa-lg"> </i></button>
                                 </form>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-                <h>Pagina actual: {{currentPage}}</h><br>
+                <i>Pagina actual: {{currentPage}} de {{totalPage}}</i><br>
                 <div class="row justify-content-center">
-                    <i @click="prevPage()" class="btn fa fa-arrow-left" aria-hidden="true" size="6"></i>
+                    <i @click="prevPage()" class="btn fa fa-arrow-left" aria-hidden="true"></i>
                     &nbsp;&nbsp;&nbsp;
                     <i @click="nextPage()" class="btn fa fa-arrow-right" aria-hidden="true"></i>
                 </div>
+                <h2>Ganancias totales: ${{total.toLocaleString()}}</h2>
             </div>
         </div>
     </div>
@@ -63,6 +65,7 @@
 </template>
 
 <script>
+
     import DatePicker from 'vue2-datepicker';
 
     export default {
@@ -71,32 +74,38 @@
         {
             return {
                 appointments: [],
-                url: 'api/Appointments',
+                url: '/api/Appointments',
                 pagination: [],
                 currentSortDir:'asc',
                 currentSortIcon:'fa fa-caret-up',
                 pageSize:10,
                 currentPage:1,
+                totalPage: 1,
                 dateRange: '',
             }
         },
         mounted()
         {
             this.getAppointments();
+
         },
         methods:
         {
+            
             getAppointments()
             {
                 axios.get(this.url).then(response => {
-                    this.appointments = response.data
+                    this.appointments = response.data;
+                   
                 });
+                
             },
             getFilteredAppointments(initialDate, finalDate)
             {
                 axios.get(this.url+'/'+initialDate+'/'+finalDate).then(response => {
-                    this.appointments = response.data
+                    this.appointments = response.data;
                 });
+
             },
             sort:function() 
             {
@@ -129,27 +138,53 @@
             filer()
             {
                 this.getFilteredAppointments(this.dateRange[0],this.dateRange[1]);
+            },
+            changeCreateView()
+            {
+                window.location.href = "/Appointments/create";
+            },
+            changeUpdateView(id)
+            {
+                window.location.href = "/Appointments/"+id+"/edit";
+            },
+            changeDeleteView(id)
+            {
+                let me = this;
+                if (confirm('¿Seguro que deseas borrar esta cita?')) {
+                    axios.delete('/api/Appointments/delete/'+id
+                    ).then(function (response) {
+                        me.getAppointments();
+
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    }); 
+                }
             }
+
+            
             
         },
         computed:
         {
             appointmentsSorted:function() 
             {
-                return this.appointments.sort((a,b) => {
-                let modifier = 1;
-                if(this.currentSortDir === 'desc')
+                this.totalPage = Math.ceil(this.appointments.length/this.pageSize);
+                return this.appointments.sort((a,b) => 
                 {
-                    modifier = -1;
-                } 
-                if(a['date'] < b['date']) 
-                {
-                    return -1 * modifier;
-                }
-                if(a['date'] > b['date'])
-                { 
-                    return 1 * modifier;
-                }
+                    let modifier = 1;
+                    if(this.currentSortDir === 'desc')
+                    {
+                        modifier = -1;
+                    } 
+                    if(a['date'] < b['date']) 
+                    {
+                        return -1 * modifier;
+                    }
+                    if(a['date'] > b['date'])
+                    { 
+                        return 1 * modifier;
+                    }
                 return 0;
                 }).filter((row, index) => 
                 {
@@ -158,7 +193,16 @@
                     if(index >= start && index < end) 
                         return true;
                 });
-            }
+            },
+            total:function()
+            {
+                let total = 0;
+                this.appointments.forEach(function(e) {
+                    total += (parseInt(e.price)-parseInt(e.service_price));
+                });
+                return total;
+                                
+            },
         }
 
      
